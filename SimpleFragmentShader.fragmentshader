@@ -1,0 +1,13 @@
+#version 330 core
+
+// Output data
+out vec4 FragColor;
+
+// Uniform variables
+uniform vec4 color;
+
+void main()
+{
+	// Output color from main
+	FragColor = color;
+}
