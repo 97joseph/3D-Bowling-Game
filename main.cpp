@@ -15,8 +15,10 @@
 #include "Dependencies\glm\gtc\type_ptr.hpp"
 
 #include "shader.hpp"
+#include "sphere.hpp"
 
-//variables
+
+// Variables
 GLFWwindow* window;
 const int width = 1024, height = 1024;
 
@@ -36,7 +38,7 @@ int main(void)
 	}
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(width, height, "2D Animations", NULL, NULL);
+	window = glfwCreateWindow(width, height, "Bowling Game", NULL, NULL);
 	if (window == NULL) {
 		fprintf(stderr, "Failed to open GLFW window.");
 		glfwTerminate();
@@ -47,7 +49,8 @@ int main(void)
 
 	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
-	if (glewInit() != GLEW_OK) {
+	if (glewInit() != GLEW_OK)
+	{
 		fprintf(stderr, "Failed to initialize GLEW\n");
 		glfwTerminate();
 		return -1;
@@ -64,37 +67,31 @@ int main(void)
 	// Create and compile our GLSL program from the shaders
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 
-	GLfloat vertices[] = {
-	0.5f,  0.5f, 0.0f,
-	0.5f, -0.5f, 0.0f,
-	-0.5f, -0.5f, 0.0f,
-	-0.5f,  0.5f, 0.0f
-	};
+	Sphere sphere;
 
-	GLuint indices[] = {
-		0, 3, 1,
-		1, 3, 2,
-	};
-
-	GLuint vao, vbo, ibo;
+	// Bind vao
+	GLuint vao;
 	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &ibo);
-
-	// Bind VAO
 	glBindVertexArray(vao);
 
-	// Bind VBO
+	// Bind vbo
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sphere.getInterleavedVertexSize(), sphere.getInterleavedVertices(), GL_STATIC_DRAW);
 
-	// Bind IBO
+	// Bind ibo
+	GLuint ibo;
+	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphere.getIndexSize(), sphere.getIndices(), GL_STATIC_DRAW);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Set attribute pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	int stride = sphere.getInterleavedStride();
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
 
 	// Check if the window was closed
 	while (!glfwWindowShouldClose(window))
@@ -114,14 +111,15 @@ int main(void)
 		// Use shaders
 		glUseProgram(programID);
 
-		// Bind VAO
 		glBindVertexArray(vao);
+
+		glDrawElements(GL_TRIANGLES, sphere.getIndexCount(), GL_UNSIGNED_INT, (void*)0);
 	}
 
 	// Cleanup
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ibo);
-	glDeleteVertexArrays(1, &vao);
+	glDeleteBuffers(1, &vao);
 	glDeleteProgram(programID);
 
 	// Close OpenGL window and terminate GLFW

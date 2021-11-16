@@ -1,16 +1,10 @@
 #version 330 core
 
-// The position variable has attribute position 0
-layout(location = 0) in vec3 vertexPos; 
-
-// Uniform variables
-uniform mat4 transform;
+// Input vertex data, different for all executions of this shader.
+layout(location = 0) in vec3 vertexPos;
 
 void main()
 {
     gl_Position.xyz = vertexPos;
     gl_Position.w = 1.0;
-
-	// Apply the transform on the gl_Position => final position of each vertex
-	gl_Position = transform * gl_Position;
 }

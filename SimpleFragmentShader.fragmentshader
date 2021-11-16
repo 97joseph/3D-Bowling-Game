@@ -1,13 +1,9 @@
 #version 330 core
 
-// Output data
-out vec4 FragColor;
-
-// Uniform variables
-uniform vec4 color;
+// Ouput data
+out vec3 color;
 
 void main()
 {
-	// Output color from main
-	FragColor = color;
+	color = vec3(0,0,0);
 }
