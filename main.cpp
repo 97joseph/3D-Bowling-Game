@@ -25,17 +25,18 @@ const int width = 1024, height = 1024;
 
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
-bool isMoving = false;
 float ballMovingValue = 0.0f;
 float ballRotatingValue = 0.0f;
 float cylinderRadius = 0.15f;
 float cylinderHeight = 1.0f;
 float sphereRadius = 0.3f;
+bool isMoving = false;
+glm::mediump_vec3 cursorPosition(0.0f);
 
-glm::vec3 cameraPos = glm::vec3(300.0f, 0.0f, 100.0f);
+glm::vec3 cameraPos = glm::vec3(300.0f, 0.0f, 500.0f);
 //glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 500.0f);
-glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 cameraUp = glm::vec3(100.0f, 0.0f, 0.0f);
+glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(100.0f, 1.0f, 0.0f);
 
 Camera camera(cameraPos, cameraDir, cameraUp);
 
@@ -50,20 +51,29 @@ void processInput(GLFWwindow* window)
 		camera.translateDown(cameraSpeed * 10.0f);
 	}
 	if (glfwGetKey(window, GLFW_KEY_E)) {
-		camera.translateFront(cameraSpeed * 100.0f);
+		camera.translateFront(cameraSpeed * 150.0f);
 	}
 	if (glfwGetKey(window, GLFW_KEY_R)) {
-		camera.translateBack(cameraSpeed * 100.0f);
+		camera.translateBack(cameraSpeed * 150.0f);
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 }
 
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+	cursorPosition.x = xpos / (width / 2) - 1;
+	cursorPosition.y = ypos / (height / 2) - 1;
+	cursorPosition.y = -cursorPosition.y;
+	//std::cout << cursorPosition.x << ", " << cursorPosition.y << "\n";
+}
+
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+	bool isInsideSphere = cursorPosition.x <= 0.07 && cursorPosition.x >= -0.07
+		&& cursorPosition.y <= 0.1 && cursorPosition.y >= -0.03;
 
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && isInsideSphere)
 	{
 		isMoving = true;
 	}
@@ -73,6 +83,11 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		isMoving = false;
 		ballMovingValue = 0.0f;
 	}
+}
+
+void window_callback(GLFWwindow* window, int new_width, int new_height)
+{
+	glViewport(0, 0, new_width, new_height);
 }
 
 int main(void)
@@ -132,6 +147,24 @@ int main(void)
 
 	GLuint sphereVAO, sphereVBO, sphereIBO, cylinderVAO, cylinderVBO, cylinderIBO;
 
+
+	glm::vec3 cylinderPositions[] = {
+		// 1st row
+		glm::vec3(2.0f,  0.0f,  -(cylinderHeight / 2)),
+		// 2nd row
+		glm::vec3(2.5f,  0.2f, -(cylinderHeight / 2)),
+		glm::vec3(2.5f, -0.2f, -(cylinderHeight / 2)),
+		// 3rd row
+		glm::vec3(3.0f, 0.35f, -(cylinderHeight / 2)),
+		glm::vec3(3.0f, -0.0f, -(cylinderHeight / 2)),
+		glm::vec3(3.0f, -0.35f, -(cylinderHeight / 2)),
+		// 4th row
+		glm::vec3(3.5f, 0.55f, -(cylinderHeight / 2)),
+		glm::vec3(3.5f,  0.2f, -(cylinderHeight / 2)),
+		glm::vec3(3.5f,  -0.2f, -(cylinderHeight / 2)),
+		glm::vec3(3.5f,  -0.55f, -(cylinderHeight / 2)),
+	};
+
 	// ------------------------------ Sphere ------------------------------
 	// Bind vao
 	glGenVertexArrays(1, &sphereVAO);
@@ -175,7 +208,10 @@ int main(void)
 	// Wireframe mode
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+	// Setters
+	glfwSetCursorPosCallback(window, cursor_position_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetFramebufferSizeCallback(window, window_callback);
 
 	// Check if the window was closed
 	while (!glfwWindowShouldClose(window))
@@ -188,7 +224,7 @@ int main(void)
 		processInput(window);
 
 		// Depth buffer enabled
-		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_ALWAYS);
 
 		// Color buffer enabled
 		glEnable(GL_COLOR_MATERIAL);
@@ -206,29 +242,32 @@ int main(void)
 		glm::mat4 view = glm::mat4(1.0f);
 		view = glm::lookAt(camera.getCameraPosition(), glm::vec3(0, 0, 0), camera.getCameraUp());
 
-		bool isColloid = ballMovingValue >= (3.0f - (cylinderRadius + sphereRadius));
+		bool isColloid = ballMovingValue >= (2.0f - (cylinderRadius + sphereRadius));
 
 		// ------------------------------ Cylinder MVP ------------------------------
 
 		// Cylinder shader
 		glUseProgram(cylinderProgramID);
 
-		glm::mat4 cylindersModel = glm::mat4(1.0f);
-		float cylinderAngle = 0.0f;
-		if (isColloid)
+		for (unsigned int i = 0; i < 10; i++)
 		{
-			cylinderAngle = 90.0f;
+			glm::mat4 cylindersModel = glm::mat4(1.0f);
+			float cylindersAngle = 0.0f;
+			if (isColloid)
+			{
+				cylindersAngle = 90.0f;
+			}
+
+			cylindersModel = glm::translate(cylindersModel, cylinderPositions[i]);
+			cylindersModel = glm::rotate(cylindersModel, cylindersAngle, glm::vec3(0.0, -(cylinderHeight / 2), 0.0));
+
+			glm::mat4 mvp = projection * view * cylindersModel;
+			unsigned int mvpLoc = glGetUniformLocation(cylinderProgramID, "mvp");
+			glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+
+			glBindVertexArray(cylinderVAO);
+			glDrawElements(GL_TRIANGLES, cylinder.getIndexCount(), GL_UNSIGNED_INT, (void*)0);
 		}
-
-		cylindersModel = glm::translate(cylindersModel, glm::vec3(3.0f, 0.0f, -(cylinderHeight / 2)));
-		cylindersModel = glm::rotate(cylindersModel, cylinderAngle, glm::vec3(0.0, -(cylinderHeight / 2), 0.0));
-
-		glm::mat4 mvp = projection * view * cylindersModel;
-		unsigned int mvpLoc = glGetUniformLocation(cylinderProgramID, "mvp");
-		glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
-
-		glBindVertexArray(cylinderVAO);
-		glDrawElements(GL_TRIANGLES, cylinder.getIndexCount(), GL_UNSIGNED_INT, (void*)0);
 
 		// ------------------------------ Sphere MVP ------------------------------
 
@@ -238,7 +277,8 @@ int main(void)
 
 		/*
 		Ball launched:
-		To get the first contact, radius of the sphere and the cylinder should be removed from the translation value of the cylinder
+		To get the first contact, radius of the sphere and the cylinder
+		should be removed from the translation value of the cylinder
 		*/
 		if (isMoving && !isColloid)
 		{
