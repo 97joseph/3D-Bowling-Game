@@ -143,15 +143,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="camera.cpp" />
+    <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CylinderFragmentShader.fragmentshader" />
+    <None Include="CylinderVertexShader.vertexshader" />
     <None Include="SimpleFragmentShader.fragmentshader" />
     <None Include="SimpleVertexShader.vertexshader" />
+    <None Include="SphereFragmentShader.fragmentshader" />
+    <None Include="SphereVertexShader.vertexshader" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.hpp" />
+    <ClInclude Include="cylinder.hpp" />
     <ClInclude Include="shader.hpp" />
     <ClInclude Include="sphere.hpp" />
   </ItemGroup>

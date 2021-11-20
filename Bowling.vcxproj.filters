@@ -24,16 +24,32 @@
     <ClCompile Include="sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cylinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleFragmentShader.fragmentshader" />
     <None Include="SimpleVertexShader.vertexshader" />
+    <None Include="SphereVertexShader.vertexshader" />
+    <None Include="SphereFragmentShader.fragmentshader" />
+    <None Include="CylinderVertexShader.vertexshader" />
+    <None Include="CylinderFragmentShader.fragmentshader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sphere.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cylinder.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
