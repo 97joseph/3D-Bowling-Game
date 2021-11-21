@@ -34,7 +34,6 @@ bool isMoving = false;
 glm::mediump_vec3 cursorPosition(0.0f);
 
 glm::vec3 cameraPos = glm::vec3(300.0f, 0.0f, 500.0f);
-//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 500.0f);
 glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(100.0f, 1.0f, 0.0f);
 
@@ -65,7 +64,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 	cursorPosition.x = xpos / (width / 2) - 1;
 	cursorPosition.y = ypos / (height / 2) - 1;
 	cursorPosition.y = -cursorPosition.y;
-	//std::cout << cursorPosition.x << ", " << cursorPosition.y << "\n";
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -206,7 +204,7 @@ int main(void)
 	projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 1000.0f);
 
 	// Wireframe mode
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Setters
 	glfwSetCursorPosCallback(window, cursor_position_callback);
@@ -235,20 +233,23 @@ int main(void)
 		// Use shaders
 		glUseProgram(programID);
 
+		// Delta time
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+		// View camera
 		glm::mat4 view = glm::mat4(1.0f);
 		view = glm::lookAt(camera.getCameraPosition(), glm::vec3(0, 0, 0), camera.getCameraUp());
 
+		// Check if ball's edge touches the cylinder's edge
 		bool isColloid = ballMovingValue >= (2.0f - (cylinderRadius + sphereRadius));
 
 		// ------------------------------ Cylinder MVP ------------------------------
-
 		// Cylinder shader
 		glUseProgram(cylinderProgramID);
 
+		// Drawing all cylinders
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			glm::mat4 cylindersModel = glm::mat4(1.0f);
@@ -257,8 +258,12 @@ int main(void)
 			{
 				cylindersAngle = 90.0f;
 			}
-
+			// Get cylinder position
 			cylindersModel = glm::translate(cylindersModel, cylinderPositions[i]);
+			/*
+			Translate the cylinder axis to its base instead of its center,
+			so the rotation be around its base not around its center.
+			*/
 			cylindersModel = glm::rotate(cylindersModel, cylindersAngle, glm::vec3(0.0, -(cylinderHeight / 2), 0.0));
 
 			glm::mat4 mvp = projection * view * cylindersModel;
@@ -270,11 +275,9 @@ int main(void)
 		}
 
 		// ------------------------------ Sphere MVP ------------------------------
-
 		// Sphere shader
 		glUseProgram(sphereProgramID);
 		glm::mat4 sphereModel = glm::mat4(1.0f);
-
 		/*
 		Ball launched:
 		To get the first contact, radius of the sphere and the cylinder
@@ -285,8 +288,9 @@ int main(void)
 			ballMovingValue += 0.001f;
 			ballRotatingValue += 1.0f;
 		}
-
+		// Translate the sphere with its radius in order to match the base of the cylinder
 		sphereModel = glm::translate(sphereModel, glm::vec3(ballMovingValue, 0.0f, -sphereRadius));
+		// Rotate around its center
 		sphereModel = glm::rotate(sphereModel, ballRotatingValue, glm::vec3(0.0, 0.0, 1.0));
 
 		glm::mat4 mvp2 = projection * view * sphereModel;
