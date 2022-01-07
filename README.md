@@ -1,4 +1,4 @@
-3D Simple Bowling Game by using C++ OpenGL (including glfw libraries).
+<strong>3D Simple Bowling Game by using C++ OpenGL (including glfw libraries).</strong>
 
 With the help of:
 * http://www.songho.ca/opengl/gl_cylinder.html
